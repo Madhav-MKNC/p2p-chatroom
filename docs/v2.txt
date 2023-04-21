@@ -1,1 +1,5 @@
 
+Each node => Client + Server 
+
+Client when recv 
+Server when broadcast 
