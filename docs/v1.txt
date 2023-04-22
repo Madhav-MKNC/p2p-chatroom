@@ -1,3 +1,0 @@
-Host variable server
-
-Server self hosts on best node connected in the network 
