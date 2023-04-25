@@ -1,3 +1,2 @@
-__pycache__/
-node/__pycache__/
-docs/
+*/__pycache__/
+/docs/
