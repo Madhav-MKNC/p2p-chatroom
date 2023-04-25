@@ -14,7 +14,7 @@ from constants import *
 def Server():
     def __init__(self, addr=('localhost',3000)):
         self.addr = addr
-        self.other_nodes = dict()
+        self.other_nodes = set()
 
     def up(self):
         try:
@@ -51,7 +51,7 @@ def Server():
             self.sock = client_sock
             self.addr = addr
             self.name = ""
-            self.other_nodes[self.sock] = self.addr
+            self.other_nodes.add(self.sock)
         
         def exists(self, name):
             # check the username if already active on the server (INNER CLASS implementation will fix this)
