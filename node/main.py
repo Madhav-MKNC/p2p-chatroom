@@ -18,19 +18,23 @@ class Node:
     def __init__(self, host, port):
         self.host = host
         self.port = port
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.bind((host, port))
-        self.socket.listen(ROOM_LIMIT)
+
         self.connections = deque()
         self.lock = threading.Lock()
         self.message_queue = Queue()
         self.threads = []
         self.running = True
-        
-        self.broadcast_thread = threading.Thread(target=self.broadcast_loop)
-        self.broadcast_thread.start()
-        
-    def connect(self, node):
+
+        self.broadcast_thread = threading.Thread(target=self.broadcast_loop).start()
+    
+        try:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.bind((self.host, self.port))
+            self.socket.listen(ROOM_LIMIT)
+        except socket.error as e:
+            print("[!] Failed to create a socket, [error]",str(e))
+
+    def connect(self, node): 
         try:
             sock = socket.create_connection(node, timeout=3)
             with self.lock:
@@ -38,7 +42,7 @@ class Node:
                 thread = threading.Thread(target=self.handle_connection, args=(sock,))
                 self.threads.append(thread)
                 thread.start()
-        except ConnectionRefusedError:
+        except ConnectionError:
             print(f"Connection to {node} refused.")
         except socket.timeout:
             print(f"Connection to {node} timed out.")
@@ -106,18 +110,24 @@ class Node:
 
 
 
-nodes = [
-    Node("localhost", 3000),
-    Node("localhost", 3001),
-    Node("localhost", 3002),
-    Node("localhost", 3003),
-    Node("localhost", 3004)
-]
+host = input("Enter the host: ")
+port = int(input("Enter the port: "))
+node = Node(host,port)
+node.start()
 
-for i, node in enumerate(nodes):
-    for j in range(i+1, len(nodes)):
-        node.connect((nodes[j].host, nodes[j].port))
-        nodes[j].connect((node.host, node.port))
 
-for node in nodes:
-    threading.Thread(target=node.start).start()
+# nodes = [
+#     Node("localhost", 3000),
+#     Node("localhost", 3001),
+#     Node("localhost", 3002),
+#     Node("localhost", 3003),
+#     Node("localhost", 3004)
+# ]
+
+# for i, node in enumerate(nodes):
+#     for j in range(i+1, len(nodes)):
+#         node.connect((nodes[j].host, nodes[j].port))
+#         nodes[j].connect((node.host, node.port))
+
+# for node in nodes:
+#     threading.Thread(target=node.start).start()
